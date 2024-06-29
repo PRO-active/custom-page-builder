@@ -1,31 +1,54 @@
 import streamlit as st
 
-# ユーザーインターフェースの作成
-st.title("オリジナルページ作成アプリ")
+# セッション状態を初期化
+if 'sections' not in st.session_state:
+    st.session_state.sections = []
 
-st.header("ページの設定")
+def add_section():
+    st.session_state.sections.append({'title': '', 'content': ''})
 
-# 入力フォーム
-title = st.text_input("ページのタイトル")
-background_color = st.color_picker("背景色を選択", "#ffffff")
-text_color = st.color_picker("文字色を選択", "#000000")
-content = st.text_area("ページの内容")
+def remove_section(index):
+    st.session_state.sections.pop(index)
 
-# ボタンが押された場合
+def update_section(index, title, content):
+    st.session_state.sections[index]['title'] = title
+    st.session_state.sections[index]['content'] = content
+
+# アプリの名前と説明
+st.title("My Custom Page Builder")
+st.write("このアプリを使って、オリジナルのウェブページを簡単に作成できます。")
+
+st.header("セクションの設定")
+
+# セクション追加ボタン
+if st.button("セクションを追加"):
+    add_section()
+
+# セクションの表示
+for index, section in enumerate(st.session_state.sections):
+    title = st.text_input(f"セクション {index+1} のタイトル", section['title'], key=f"title_{index}")
+    content = st.text_area(f"セクション {index+1} の内容", section['content'], key=f"content_{index}")
+    st.session_state.sections[index]['title'] = title
+    st.session_state.sections[index]['content'] = content
+    if st.button(f"セクション {index+1} を削除", key=f"remove_{index}"):
+        remove_section(index)
+
+# ページ生成ボタン
 if st.button("ページを生成"):
-    # 生成されたページを表示
-    st.markdown(f"""
-    <div style="background-color: {background_color}; color: {text_color}; padding: 20px;">
-        <h1 style="text-align: center;">{title}</h1>
-        <p>{content}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    for section in st.session_state.sections:
+        st.markdown(f"""
+        <div style="padding: 20px;">
+            <h2>{section['title']}</h2>
+            <p>{section['content']}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-# サイドバー
+# サイドバーでプレビュー表示
 st.sidebar.title("ページのプレビュー")
-st.sidebar.markdown(f"""
-    <div style="background-color: {background_color}; color: {text_color}; padding: 20px;">
-        <h1 style="text-align: center;">{title}</h1>
-        <p>{content}</p>
+for section in st.session_state.sections:
+    st.sidebar.markdown(f"""
+    <div style="padding: 20px;">
+        <h2>{section['title']}</h2>
+        <p>{section['content']}</p>
     </div>
     """, unsafe_allow_html=True)
